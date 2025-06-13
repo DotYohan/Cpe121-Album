@@ -8,6 +8,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 /**
@@ -30,7 +32,6 @@ public class UserFront extends javax.swing.JFrame {
         
         this.Accountnumb = names;
         Search();
-        getBalance();
         MainName.setText(name);
         MainAcc.setText(Accountnumb);
         MainBal.setText(Sbal);
@@ -41,28 +42,15 @@ public class UserFront extends javax.swing.JFrame {
         DB_connection.init();
         Connection c = DB_connection.getConnection();
         try {
-            PreparedStatement ps = c.prepareStatement("SELECT * FROM bank.accountinfo where accountnumber = '" + Accountnumb + "';");
+            PreparedStatement ps = c.prepareStatement("SELECT * FROM accounts where accountnumber = '" + Accountnumb + "';");
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                name = rs.getString("accountname");
-            }
-        } catch (SQLException ex) {
-            
-        }
-    }
-    public void getBalance() {
-        DB_connection.init();
-        Connection c = DB_connection.getConnection();
-        try {
-            PreparedStatement ps = c.prepareStatement("SELECT * FROM bank.accounts where accountnumber = '" + Accountnumb + "';");
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
+                name = rs.getString("Name");
                 Sbal = rs.getString("Balance");
             }
         } catch (SQLException ex) {
-           
+            
         }
     }
 
@@ -85,11 +73,10 @@ public class UserFront extends javax.swing.JFrame {
         MainAcc = new javax.swing.JLabel();
         UserSend = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
         UserPayBill = new javax.swing.JButton();
         UserLoan = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
         jButton4 = new javax.swing.JButton();
+        jButton5 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setAutoRequestFocus(false);
@@ -138,17 +125,9 @@ public class UserFront extends javax.swing.JFrame {
                 jButton1ActionPerformed(evt);
             }
         });
-        getContentPane().add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 250, 100, -1));
+        getContentPane().add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 200, 130, -1));
 
-        jButton2.setText("Bank Transfer");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
-        getContentPane().add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 200, -1, -1));
-
-        UserPayBill.setText("Pay Bills");
+        UserPayBill.setText("Pay Loan");
         UserPayBill.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 UserPayBillActionPerformed(evt);
@@ -164,14 +143,6 @@ public class UserFront extends javax.swing.JFrame {
         });
         getContentPane().add(UserLoan, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 300, -1, -1));
 
-        jButton3.setText("Credit Cards");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
-            }
-        });
-        getContentPane().add(jButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 300, 100, -1));
-
         jButton4.setText("Log Out");
         jButton4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -179,6 +150,14 @@ public class UserFront extends javax.swing.JFrame {
             }
         });
         getContentPane().add(jButton4, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 30, -1, -1));
+
+        jButton5.setText("Change Password");
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
+        getContentPane().add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 250, 130, -1));
 
         pack();
         setLocationRelativeTo(null);
@@ -196,14 +175,6 @@ public class UserFront extends javax.swing.JFrame {
         this.dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        JOptionPane.showMessageDialog(null, "This feature is currently under development. \nWe'll get you in touch if this feature is realease!");
-    }//GEN-LAST:event_jButton2ActionPerformed
-
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        JOptionPane.showMessageDialog(null, "This feature is currently under development. \nWe'll get you in touch if this feature is realease!");
-    }//GEN-LAST:event_jButton3ActionPerformed
-
     private void UserLoanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_UserLoanActionPerformed
         LoanForm open = new LoanForm(Accountnumb, name);
         open.setVisible(true);
@@ -211,7 +182,7 @@ public class UserFront extends javax.swing.JFrame {
     }//GEN-LAST:event_UserLoanActionPerformed
 
     private void UserPayBillActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_UserPayBillActionPerformed
-        PayBills open = new PayBills(Accountnumb, name);
+        PayLoan open = new PayLoan(Accountnumb, name);
         open.setVisible(true);
         this.dispose();
     }//GEN-LAST:event_UserPayBillActionPerformed
@@ -221,6 +192,12 @@ public class UserFront extends javax.swing.JFrame {
        open.setVisible(true);
         this.dispose();
     }//GEN-LAST:event_jButton4ActionPerformed
+
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+        Changepass open = new Changepass(Accountnumb);
+        open.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_jButton5ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -267,9 +244,8 @@ public class UserFront extends javax.swing.JFrame {
     private javax.swing.JButton UserPayBill;
     private javax.swing.JButton UserSend;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton5;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;

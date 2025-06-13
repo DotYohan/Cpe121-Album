@@ -6,6 +6,7 @@ package cpe121.briones.finalproject;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
 import java.time.LocalDateTime;
@@ -19,6 +20,7 @@ public class LoanForm extends javax.swing.JFrame {
 
     private String AccountNumber = "";
     private String AccName = "";
+    private String Sbal;
 
     public LoanForm() {
         initComponents();
@@ -28,26 +30,97 @@ public class LoanForm extends javax.swing.JFrame {
         initComponents();
         this.AccountNumber = Accnumber;
         this.AccName = name;
+        getBalance();
+    }
+
+    public void getBalance() {
+        DB_connection.init();
+        Connection c = DB_connection.getConnection();
+        try {
+            PreparedStatement ps = c.prepareStatement("SELECT * FROM bank.accounts where accountnumber = '" + AccountNumber + "';");
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                Sbal = rs.getString("Balance");
+            }
+        } catch (SQLException ex) {
+
+        }
     }
 
     private void AccountData(String accountloan) {
         DB_connection.init();
+        Connection c = null;
+        PreparedStatement ps = null;
+
         try {
             LocalDateTime now = LocalDateTime.now();
             String formatted = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-            Connection c = DB_connection.getConnection();
-            String User = "user_" + AccountNumber;
-            PreparedStatement ps = c.prepareStatement("Insert into " + User + " (Dates, accountnumber, accountname,accountloan, remarks) values('"
-                    + formatted + "','" + AccountNumber + "','" + AccName + "','" + accountloan + "','unpaid')");
-            ps.execute();
+            c = DB_connection.getConnection();
+            c.setAutoCommit(false);
 
-            JOptionPane.showMessageDialog(null, "Approved!");
-            this.dispose();
+            double balance = Double.parseDouble(Sbal);
+            double loanval = Double.parseDouble(accountloan);
+            double newBalance = balance + loanval;
+
+            String userTable = "user_" + AccountNumber;
+
+            // 1. Insert transaction record
+            String insertSQL = "INSERT INTO " + userTable
+                    + " (Dates, accountnumber, accountname, accountbalance, accountloan, remarks) "
+                    + "VALUES (?, ?, ?, ?, ?, 'unpaid')";
+            ps = c.prepareStatement(insertSQL);
+            ps.setString(1, formatted);
+            ps.setString(2, AccountNumber);
+            ps.setString(3, AccName);
+            ps.setDouble(4, newBalance);
+            ps.setDouble(5, loanval);
+
+            if (ps.executeUpdate() > 0) {
+                ps.close();
+
+                // 2. Update balance in accounts table
+                ps = c.prepareStatement("UPDATE accounts SET Balance = ? WHERE accountnumber = ?");
+                ps.setDouble(1, newBalance);
+                ps.setString(2, AccountNumber);
+                if (ps.executeUpdate() > 0) {
+                    ps.close();
+
+                    c.commit();
+                    JOptionPane.showMessageDialog(null, "Approved!");
+                    UserFront open = new UserFront(AccountNumber);
+                    open.setVisible(true);
+                    this.dispose();
+
+                } else {
+                    JOptionPane.showMessageDialog(null, "Failed to update account balance.");
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Failed to insert transaction.");
+            }
 
         } catch (SQLException ex) {
-            ex.printStackTrace(); // for debugging
+            if (c != null) {
+                try {
+                    c.rollback();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            ex.printStackTrace();
             JOptionPane.showMessageDialog(null, "Database error: " + ex.getMessage());
+        } finally {
+            try {
+                if (ps != null) {
+                    ps.close();
+                }
+                if (c != null) {
+                    c.setAutoCommit(true);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -80,7 +153,7 @@ public class LoanForm extends javax.swing.JFrame {
 
         AgreeButton.setFont(new java.awt.Font("Segoe UI", 0, 8)); // NOI18N
         AgreeButton.setText("By checking this, you have agreed to our Term's and condition and Data and Privacy Protection");
-        getContentPane().add(AgreeButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 280, -1, -1));
+        getContentPane().add(AgreeButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 240, -1, -1));
 
         jButton1.setText("Submit");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -88,7 +161,7 @@ public class LoanForm extends javax.swing.JFrame {
                 jButton1ActionPerformed(evt);
             }
         });
-        getContentPane().add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 310, -1, -1));
+        getContentPane().add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 270, -1, -1));
 
         jButton2.setText("Exit");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
@@ -96,9 +169,10 @@ public class LoanForm extends javax.swing.JFrame {
                 jButton2ActionPerformed(evt);
             }
         });
-        getContentPane().add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 310, -1, -1));
+        getContentPane().add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 270, -1, -1));
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
@@ -112,8 +186,6 @@ public class LoanForm extends javax.swing.JFrame {
         } else {
             JOptionPane.showMessageDialog(null, "Please check the Term's and codition and data and privacy protection agreement!");
         }
-        UserFront open = new UserFront(AccName);
-        open.setVisible(true);
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed

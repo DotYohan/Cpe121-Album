@@ -90,17 +90,18 @@ public class PayLoan extends javax.swing.JFrame {
             } else {
                 JOptionPane.showMessageDialog(null, "No record found.");
             }
-            ps = c.prepareStatement("UPDATE accounts set Balance = " + newBal + " WHERE accountnumber = " + accountNumb + ";");
+            ps = c.prepareStatement("UPDATE accounts set Balance = ? WHERE accountnumber = ?;");
+            ps.setDouble(1, newBal);
+            ps.setString(2, accountNumb);
             rowsUpdated = ps.executeUpdate();
             if (rowsUpdated > 0) {
             } else {
                 JOptionPane.showMessageDialog(null, "No record found.");
             }
             ps = c.prepareStatement("Insert into " + user + " (Dates, accountnumber, accountname, accountbalance) values('"
-                    + formatted + "','" + accountNumb + "','" + AccName + "','" + newBal + "')");
+                    + formatted + "','" + accountNumb + "','" + AccName + "'," + newBal + ")");
             ps.execute();
             JOptionPane.showMessageDialog(null, "Transaction Successfully Saved");
-            this.dispose();
 
         } catch (SQLException ex) {
             ex.printStackTrace(); // for debugging
@@ -108,25 +109,6 @@ public class PayLoan extends javax.swing.JFrame {
         }
     }
 
-    private void FetchData() {
-        DB_connection.init();
-
-        try {
-            user = "user_" + accountNumb;
-            Connection c = DB_connection.getConnection();
-            PreparedStatement ps = c.prepareStatement("SELECT * FROM accounts where accountnumber = " + user);
-            System.out.println(ps);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                Balance = rs.getString("Balance");
-            }
-            JOptionPane.showMessageDialog(null, "Data Successfully Saved");
-            this.dispose();
-        } catch (SQLException ex) {
-            ex.printStackTrace(); // for debugging
-            JOptionPane.showMessageDialog(null, "Database error: " + ex.getMessage());
-        }
-    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -226,6 +208,7 @@ public class PayLoan extends javax.swing.JFrame {
         getContentPane().add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 430, -1, -1));
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void PayModeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_PayModeActionPerformed
@@ -237,8 +220,7 @@ public class PayLoan extends javax.swing.JFrame {
         String selectedItem = PayMode.getSelectedItem().toString();
         douBal = Double.parseDouble(Balance);
         douloan = Double.parseDouble(loan);
-        System.out.println(douBal);
-        System.out.println(douloan);
+
         UserFront open = new UserFront(accountNumb);
        
         if (selectedItem.equals("Balance")) {
@@ -251,7 +233,6 @@ public class PayLoan extends javax.swing.JFrame {
                 douloan = Double.parseDouble(loan);
                 Payment();
                 Tables();
-                open.setVisible(true);
             }
 
         } else if (selectedItem.equals("Gcash")){
@@ -269,7 +250,6 @@ public class PayLoan extends javax.swing.JFrame {
                 newBal = douBal;
                 Payment();
                 Tables();
-                open.setVisible(true);
         } else {
             JOptionPane.showMessageDialog(null, "There was a error. Please try again later");
             

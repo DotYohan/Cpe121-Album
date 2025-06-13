@@ -4,17 +4,16 @@
  */
 package cpe121.briones.finalproject;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+
 
 /**
  *
  * @author yuanb
  */
 public class DB_connection {
-     private static Connection Myconnection;
+
+    private static Connection Myconnection;
 
     public static void init() {
         try {

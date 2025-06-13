@@ -39,76 +39,55 @@ public class CreateUser extends javax.swing.JFrame {
                 counts = 1;
                 JOptionPane.showMessageDialog(null, "Username already exists! Please choose another one.");
                 return;
+            } else {
+
+                PreparedStatement checkAccount = c.prepareStatement("SELECT * FROM accounts WHERE accountnumber = ?");
+                checkAccount.setString(1, AccountNumb);
+                ResultSet rs2 = checkAccount.executeQuery();
+
+                if (rs2.next()) {
+                    counts = 1;
+                    JOptionPane.showMessageDialog(null, "Account number already exists! Use a different one.");
+                    return;
+                } else {
+                    PreparedStatement insertAccount = c.prepareStatement(
+                            "INSERT INTO accounts (Username, Password, accountnumber, Name, Balance) VALUES (?, ?, ?, ?, ?)"
+                    );
+                    insertAccount.setString(1, AccountUsername);
+                    insertAccount.setString(2, AccountPassword);
+                    insertAccount.setString(3, AccountNumb);
+                    insertAccount.setString(4, AccountName);
+                    insertAccount.setString(5, AccountDeposits);
+
+                    int rs3 = insertAccount.executeUpdate();
+
+                    String userTable = "user_" + AccountNumb;
+                    PreparedStatement createTable = c.prepareStatement(
+                            "CREATE TABLE IF NOT EXISTS `" + userTable + "` ("
+                            + "id INT NOT NULL AUTO_INCREMENT, "
+                            + "Dates VARCHAR(125), "
+                            + "accountnumber VARCHAR(125), "
+                            + "accountname VARCHAR(125), "
+                            + "accountbalance DOUBLE, "
+                            + "accountloan DOUBLE, "
+                            + "remarks VARCHAR(125), "
+                            + "PRIMARY KEY (id))");
+                    rs3 = createTable.executeUpdate();
+
+                    PreparedStatement insertTransaction = c.prepareStatement(
+                            "INSERT INTO `" + userTable + "` (Dates, accountnumber, accountname, accountbalance, accountloan) VALUES (?, ?, ?, ?, ?)"
+                    );
+                    insertTransaction.setString(1, formatted);
+                    insertTransaction.setString(2, AccountNumb);
+                    insertTransaction.setString(3, AccountName);
+                    insertTransaction.setString(4, AccountDeposits);
+                    insertTransaction.setString(5, "0");
+                    insertTransaction.executeUpdate();
+
+                    JOptionPane.showMessageDialog(null, "Account Successfully Created");
+                    counts = 0;
+                }
             }
-
-            PreparedStatement checkAccount = c.prepareStatement("SELECT * FROM accounts WHERE accountnumber = ?");
-            checkAccount.setString(1, AccountNumb);
-            ResultSet rs2 = checkAccount.executeQuery();
-
-            if (rs2.next()) {
-                counts = 1;
-                System.out.println("counts: "+counts);
-                JOptionPane.showMessageDialog(null, "Account number already exists! Use a different one.");
-                return;
-            }
-
-            // ✅ Step 3: Insert into accounts table
-            PreparedStatement insertAccount = c.prepareStatement(
-                    "INSERT INTO accounts (Username, Password, accountnumber, Name, Balance) VALUES (?, ?, ?, ?, ?)"
-            );
-            insertAccount.setString(1, AccountUsername);
-            insertAccount.setString(2, AccountPassword);
-            insertAccount.setString(3, AccountNumb);
-            insertAccount.setString(4, AccountName);
-            insertAccount.setString(5, AccountDeposits);
-            insertAccount.executeUpdate();
-
-            JOptionPane.showMessageDialog(null, "Account Successfully Created");
-
-            // ✅ Step 4: Create per-user transaction table (if not exists)
-            String userTable = "user_" + AccountNumb;
-            PreparedStatement createTable = c.prepareStatement(
-                    "CREATE TABLE IF NOT EXISTS `" + userTable + "` ("
-                    + "id INT NOT NULL AUTO_INCREMENT, "
-                    + "Dates VARCHAR(125), "
-                    + "accountnumber VARCHAR(125), "
-                    + "accountname VARCHAR(125), "
-                    + "accountbalance VARCHAR(125), "
-                    + "accountcredit VARCHAR(125), "
-                    + "accountloan VARCHAR(125), "
-                    + "remarks VARCHAR(125), "
-                    + "PRIMARY KEY (id))"
-            );
-            createTable.executeUpdate();
-
-            PreparedStatement insertTransaction = c.prepareStatement(
-                    "INSERT INTO `" + userTable + "` (Dates, accountnumber, accountname, accountbalance, accountcredit, accountloan) VALUES (?, ?, ?, ?, ?, ?)"
-            );
-            insertTransaction.setString(1, formatted);
-            insertTransaction.setString(2, AccountNumb);
-            insertTransaction.setString(3, AccountName);
-            insertTransaction.setString(4, AccountDeposits);
-            insertTransaction.setString(5, "0");
-            insertTransaction.setString(6, "0");
-            insertTransaction.executeUpdate();
-
-            JOptionPane.showMessageDialog(null, "Initial transaction saved.");
-            counts = 0;
-        } catch (SQLException ex) {
-            ex.printStackTrace(); // for debugging
-            JOptionPane.showMessageDialog(null, "Database error: " + ex.getMessage());
-        }
-    }
-
-    private void AccountData(String AccountNumb, String AccountName, String AccountDeposits, String accountcredit, String accountloan) {
-        DB_connection.init();
-        try {
-
-            Connection c = DB_connection.getConnection();
-            PreparedStatement ps = c.prepareStatement("Insert into accountinfo (Dateses,accountnumber,accountname,  accountbalance , accountcredit, accountloan) values('" + formatted + "','" + AccountNumb + "','" + AccountName + "','" + AccountDeposits + "','" + accountcredit + "','" + accountloan + "')");
-            System.out.println(ps);
-            ps.execute();
-            JOptionPane.showMessageDialog(null, "Data Successfully Saved");
         } catch (SQLException ex) {
             ex.printStackTrace(); // for debugging
             JOptionPane.showMessageDialog(null, "Database error: " + ex.getMessage());
@@ -136,6 +115,7 @@ public class CreateUser extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jLabel6 = new javax.swing.JLabel();
         AccUser = new javax.swing.JTextField();
+        jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setPreferredSize(new java.awt.Dimension(340, 490));
@@ -180,6 +160,14 @@ public class CreateUser extends javax.swing.JFrame {
         getContentPane().add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 150, -1, -1));
         getContentPane().add(AccUser, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 170, 230, -1));
 
+        jButton2.setText("Cancel");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+        getContentPane().add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 390, -1, -1));
+
         pack();
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
@@ -194,14 +182,15 @@ public class CreateUser extends javax.swing.JFrame {
         String AccountPassword = AccountPass.getText();
         String AccountDeposits = AccDeposit.getText();
         String AccountUsername = AccUser.getText();
+        
         String hashed = encrypt.hash(AccountPassword);
+
         if (AccountNumb.equals("") || AccountName.equals("") || AccountPassword.equals("") || AccountDeposits.equals("") || AccountUsername.equals("")) {
             JOptionPane.showMessageDialog(null, "Please fill the form completely!");
         } else {
             Savedata(AccountUsername, hashed, AccountNumb, AccountName, AccountDeposits);
             if (counts == 0) {
-                AccountData(AccountNumb, AccountName, AccountDeposits, "0", "0");
-                LogIn open = new LogIn();
+                BankForm open = new BankForm();
                 open.setVisible(true);
                 this.dispose();
             } else {
@@ -209,6 +198,12 @@ public class CreateUser extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        BankForm open = new BankForm();
+        open.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_jButton2ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -252,6 +247,7 @@ public class CreateUser extends javax.swing.JFrame {
     private javax.swing.JTextField AccountNo;
     private javax.swing.JTextField AccountPass;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

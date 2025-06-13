@@ -33,7 +33,6 @@ public class SendForm extends javax.swing.JFrame {
     try {
         c.setAutoCommit(false);
 
-        // Step 1: Get sender info
         PreparedStatement ps = c.prepareStatement("SELECT Balance, Name FROM accounts WHERE accountnumber = ?");
         ps.setString(1, senderAcc);
         ResultSet rs = ps.executeQuery();
@@ -51,7 +50,6 @@ public class SendForm extends javax.swing.JFrame {
             return;
         }
 
-        // Step 2: Get receiver info
         ps = c.prepareStatement("SELECT Balance, Name FROM accounts WHERE accountnumber = ?");
         ps.setString(1, receiverAcc);
         rs = ps.executeQuery();
@@ -64,7 +62,6 @@ public class SendForm extends javax.swing.JFrame {
         double receiverBalance = Double.parseDouble(rs.getString("Balance"));
         String receiverName = rs.getString("Name");
 
-        // Step 3: Calculate new balances
         double newSenderBal = senderBalance - amount;
         double newReceiverBal = receiverBalance + amount;
 
@@ -141,6 +138,7 @@ public class SendForm extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         SentAmount = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setPreferredSize(new java.awt.Dimension(400, 420));
@@ -177,6 +175,14 @@ public class SendForm extends javax.swing.JFrame {
         });
         getContentPane().add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 330, -1, -1));
 
+        jButton2.setText("Cancel");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+        getContentPane().add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 50, -1, -1));
+
         pack();
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
@@ -193,6 +199,12 @@ public class SendForm extends javax.swing.JFrame {
         open.setVisible(true);
         this.dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        UserFront open = new UserFront(accountNumb);
+        open.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_jButton2ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -234,6 +246,7 @@ public class SendForm extends javax.swing.JFrame {
     private javax.swing.JTextField AccountNumber;
     private javax.swing.JTextField SentAmount;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
